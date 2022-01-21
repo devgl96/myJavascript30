@@ -1,66 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>JS Drum Kit</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>JS Drum Kit</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="keys">
+      <div data-key="65" class="key">
+        <!--keyCode: 97-->
+        <kbd>A</kbd>
+        <span class="sound">clap</span>
+      </div>
+      <div data-key="83" class="key">
+        <!--keyCode: 115-->
+        <kbd>S</kbd>
+        <span class="sound">hihat</span>
+      </div>
+      <div data-key="68" class="key">
+        <!--keyCode: 100-->
+        <kbd>D</kbd>
+        <span class="sound">kick</span>
+      </div>
+      <div data-key="70" class="key">
+        <!--keyCode: 102-->
+        <kbd>F</kbd>
+        <span class="sound">openhat</span>
+      </div>
+      <div data-key="71" class="key">
+        <!--keyCode: 103-->
+        <kbd>G</kbd>
+        <span class="sound">boom</span>
+      </div>
+      <div data-key="72" class="key">
+        <!--keyCode: 104-->
+        <kbd>H</kbd>
+        <span class="sound">ride</span>
+      </div>
+      <div data-key="74" class="key">
+        <!--keyCode: 106-->
+        <kbd>J</kbd>
+        <span class="sound">snare</span>
+      </div>
+      <div data-key="75" class="key">
+        <!--keyCode: 107-->
+        <kbd>K</kbd>
+        <span class="sound">tom</span>
+      </div>
+      <div data-key="76" class="key">
+        <!--keyCode: 108-->
+        <kbd>L</kbd>
+        <span class="sound">tink</span>
+      </div>
+    </div>
 
+    <div class="recordArea">
+      <button class="start-recording">Start Record</button>
+      <button class="stop-recording">Stop Record</button>
+      <button class="download-audio">Download Audio</button>
+      <div class="audioPlayArea hidden">
+        <audio controls src="" class="recorded-audio"></audio>
+      </div>
+    </div>
 
-  <div class="keys">
-    <div data-key="65" class="key">
-      <kbd>A</kbd>
-      <span class="sound">clap</span>
-    </div>
-    <div data-key="83" class="key">
-      <kbd>S</kbd>
-      <span class="sound">hihat</span>
-    </div>
-    <div data-key="68" class="key">
-      <kbd>D</kbd>
-      <span class="sound">kick</span>
-    </div>
-    <div data-key="70" class="key">
-      <kbd>F</kbd>
-      <span class="sound">openhat</span>
-    </div>
-    <div data-key="71" class="key">
-      <kbd>G</kbd>
-      <span class="sound">boom</span>
-    </div>
-    <div data-key="72" class="key">
-      <kbd>H</kbd>
-      <span class="sound">ride</span>
-    </div>
-    <div data-key="74" class="key">
-      <kbd>J</kbd>
-      <span class="sound">snare</span>
-    </div>
-    <div data-key="75" class="key">
-      <kbd>K</kbd>
-      <span class="sound">tom</span>
-    </div>
-    <div data-key="76" class="key">
-      <kbd>L</kbd>
-      <span class="sound">tink</span>
-    </div>
-  </div>
+    <audio data-key="65" src="sounds/clap.wav"></audio>
+    <audio data-key="83" src="sounds/hihat.wav"></audio>
+    <audio data-key="68" src="sounds/kick.wav"></audio>
+    <audio data-key="70" src="sounds/openhat.wav"></audio>
+    <audio data-key="71" src="sounds/boom.wav"></audio>
+    <audio data-key="72" src="sounds/ride.wav"></audio>
+    <audio data-key="74" src="sounds/snare.wav"></audio>
+    <audio data-key="75" src="sounds/tom.wav"></audio>
+    <audio data-key="76" src="sounds/tink.wav"></audio>
 
-  <audio data-key="65" src="sounds/clap.wav"></audio>
-  <audio data-key="83" src="sounds/hihat.wav"></audio>
-  <audio data-key="68" src="sounds/kick.wav"></audio>
-  <audio data-key="70" src="sounds/openhat.wav"></audio>
-  <audio data-key="71" src="sounds/boom.wav"></audio>
-  <audio data-key="72" src="sounds/ride.wav"></audio>
-  <audio data-key="74" src="sounds/snare.wav"></audio>
-  <audio data-key="75" src="sounds/tom.wav"></audio>
-  <audio data-key="76" src="sounds/tink.wav"></audio>
+    <script>
+      // Create a function to play sound
+      function playSound(event) {
+        // Get audio related about the event.keyCode
+        const audioSound = document.querySelector(
+          `audio[data-key="${event.keyCode}"]`
+        );
 
-<script>
+        // Get the key related about the event.keyCode
+        const getKey = document.querySelector(
+          `.key[data-key="${event.keyCode}"]`
+        );
 
-</script>
+        // Adding the class to made an animation in the button when it were pressed
+        getKey.classList.add("playing");
 
+        // Verify audio related
+        if (!audioSound) return; // Stop the function from running all together
 
-</body>
+        // If there is an audio related
+        audioSound.currentTime = 0; // This make the sound play over and over again
+        audioSound.play(); // Play the audio
+      }
+
+      // Add event listener
+      window.addEventListener("keydown", playSound);
+
+      // Create a function removeTransition
+      function removeTransition(event) {
+        if (event.propertyName !== "transform") return; // Skip it if it's not a transform
+
+        // The term 'this' is related about the key that was pressed
+        this.classList.remove("playing");
+      }
+
+      // To create an animation, it is necessary create an addEventListener to finished
+      const keys = document.querySelectorAll(".key");
+
+      // Make a loop to addEventListener in each element
+      keys.forEach((key) =>
+        key.addEventListener("transitionend", removeTransition)
+      );
+
+      // New Features
+      // Create a stream to record
+      let audio = null,
+        mixedStream = null,
+        chunks = [],
+        recorder = null;
+      (startButton = null), (stopButton = null);
+
+      async function setupStream() {
+        try {
+          audio = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              sampleRate: 44100,
+            },
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      async function startRecording () {
+        await setupStream();
+
+        if (audio) {
+          mixedStream = new MediaStream([...audio.getTracks()]);
+          recorder = new MediaRecorder(mixedStream);
+          recorder.ondataavailable = handleDataAvailable;
+          recorder.onstop = handleStop;
+          recorder.start(1000);
+        
+          startButton.disabled = true;
+          stopButton.disabled = false;
+        
+          console.log('Recording started');
+        } else {
+          console.warn('No stream available.');
+        }
+      }
+
+      function stopRecording () {
+        recorder.stop();
+
+        startButton.disabled = false;
+        stopButton.disabled = true;
+      }
+
+      function handleDataAvailable (e) {
+        chunks.push(e.data);
+      }
+
+      function handleStop (e) {
+        const blob = new Blob(chunks, { 'type' : 'audio/wav' });
+        chunks = [];
+
+        downloadButton.href = URL.createObjectURL(blob);
+        downloadButton.download = 'sample.wav';
+        downloadButton.disabled = false;
+
+        recordedAudio.src = URL.createObjectURL(blob);
+        recordedAudio.load();
+        recordedAudio.onloadeddata = function() {
+          const audioPlayArea = document.querySelector(".audioPlayArea");
+          const rc = document.querySelector(".recorded-audio");
+          
+          audioPlayArea.classList.remove("hidden");
+          // rc.scrollIntoView({ behavior: "smooth", block: "start" });
+
+          recordedAudio.play();
+        }
+
+        // stream.getTracks().forEach((track) => track.stop());
+        audio.getTracks().forEach((track) => track.stop());
+
+        console.log('Recording stopped');
+      }
+
+      window.addEventListener('load', () => {
+        startButton = document.querySelector('.start-recording');
+        stopButton = document.querySelector('.stop-recording');
+        downloadButton = document.querySelector('.download-audio');
+        recordedAudio = document.querySelector('.recorded-audio');
+
+        startButton.addEventListener('click', startRecording);
+        stopButton.addEventListener('click', stopRecording);
+      })
+    </script>
+  </body>
 </html>
